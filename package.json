@@ -21,12 +21,14 @@
   "dependencies": {
     "@openzeppelin/contracts": "^3.3.0",
     "@openzeppelin/test-helpers": "0.5.6",
-    "@truffle/hdwallet-provider": "^1.2.1",
-    "dotenv": "^8.2.0",
-    "truffle-plugin-verify": "^0.5.4",
     "@pancakeswap/pancake-swap-lib": "^0.0.1",
+    "@truffle/hdwallet-provider": "^1.2.1",
+    "abi-decoder": "^2.4.0",
+    "dotenv": "^8.2.0",
+    "ethers": "^5.0.29",
     "truffle": "^5.1.58",
-    "truffle-flattener": "^1.4.4"
+    "truffle-flattener": "^1.4.4",
+    "truffle-plugin-verify": "^0.5.4"
   },
   "devDependencies": {
     "bignumber.js": "^9.0.1",
