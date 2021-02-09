@@ -32,6 +32,7 @@ contract Voom is Members  {
         bool status;
     }
     mapping(address => VoomStruct) public vooms;
+    mapping(uint256 => address) public voomsList;
     uint256 public lastVoom;
     uint256 public withdrawGlobal;
 
@@ -128,6 +129,7 @@ contract Voom is Members  {
             });
             vooms[msg.sender] = voom_struct;
             lastVoom++;
+            voomsList[lastVoom] = msg.sender;
             emit eventDeposit(msg.sender, _amount, now);
         }
         _amount = _amount.mul(90).div(100);
