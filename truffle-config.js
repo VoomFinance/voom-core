@@ -5,8 +5,8 @@ require('dotenv').config();
 module.exports = {
   networks: {
     development: {
-      host: "138.197.197.57",
-      port: 80,
+      host: "127.0.0.1",
+      port: 8545,
       network_id: "*"
     },
     bsc_testnet: {

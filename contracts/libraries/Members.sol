@@ -23,7 +23,7 @@ contract Members is Basic {
         return members[_user].isExist;
     }
 
-    function addMember(address _member, address _parent) public onlyMod {
+    function addMember(address _member, address _parent) internal {
         if (lastMember > 0) {
             require(members[_parent].isExist, "Sponsor not exist");
         }
