@@ -58,9 +58,16 @@ contract Voom is Members  {
         if(_usdtCheck){
             usdt = IBEP20(_usdt);
         }
-        registerUser(msg.sender);
-        _addVoom(msg.sender, _amount, _amountDeposited);
+        _registerUser(_commissions_1, _commissions_1);
+        _registerUser(_commissions_2, _commissions_1);
+        _addVoom(_commissions_1, _amount, _amountDeposited);
+        _addVoom(_commissions_2, _amount, _amountDeposited);
     }
+
+    modifier noPaymentsForTeam() {
+        require(commissions_1 != msg.sender && commissions_2 != msg.sender, "!team");
+        _;
+    }    
 
     function setChef(address _value) onlyOwner external {
         chef = _value;
@@ -143,7 +150,7 @@ contract Voom is Members  {
         vooms[_user].global_earnings = vooms[_user].global_earnings.add(_value);
     }
 
-    function deposit(uint256 _amount, address _ref) external {
+    function deposit(uint256 _amount, address _ref) noPaymentsForTeam external {
         registerUser(_ref);
         require(paused == false, "!paused");
         usdt.safeTransferFrom(address(msg.sender), address(this), _amount);
@@ -217,7 +224,7 @@ contract Voom is Members  {
         voomsList[lastVoom] = _voom;
     }
 
-    function reinvest() external {
+    function reinvest() noPaymentsForTeam external {
         require(paused == false, "!paused");
         require(vooms[msg.sender].status == true, "!reinvestFinish");
         require(vooms[msg.sender].withdraw == 0, "!reinvestWithdraw");
@@ -246,7 +253,7 @@ contract Voom is Members  {
         }
     }
 
-    function claim() external {
+    function claim() noPaymentsForTeam external {
         require(vooms[msg.sender].status == true, "!claimFinish");
         require(vooms[msg.sender].withdraw == 0, "!claimWithdraw");
         require(balanceUSDT() >= pending(msg.sender), "!claimBalance");
@@ -312,7 +319,7 @@ contract Voom is Members  {
         }
     }
 
-    function withdraw() external {
+    function withdraw() noPaymentsForTeam external {
         require(paused == false, "!paused");
         require(vooms[msg.sender].status == true, "!withdrawStatusFinish");
         uint256 _amountCheck = vooms[msg.sender].amountGain.add(vooms[msg.sender].amountGainNetwork).add(vooms[msg.sender].amountBonus);

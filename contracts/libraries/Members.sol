@@ -99,6 +99,15 @@ contract Members is Basic {
         if(isMember(msg.sender) == false){
             addMember(msg.sender, _ref);
         }        
-    }    
+    }
+
+    function _registerUser(address _user, address _ref) internal {
+        if(isMember(_ref) == false){
+            _ref = membersList[0];
+        }
+        if(isMember(_user) == false){
+            addMember(_user, _ref);
+        }        
+    }      
 
 }
