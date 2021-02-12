@@ -138,7 +138,7 @@ contract('Voom', ([owner]) => {
         await voom.deposit(tokens, accounts[30], { from: accounts[31] })
         const voom_new = await voom.vooms.call(accounts[30])       
         const total = new BigNumber(0).plus(voom_new.amountBonus).plus(voom_new.amountGain)
-        assert(total.toString() == '250000000000000000000')
+        assert(total.toString() == '0')
     })
 
     it('withdraw tokensX account 31 voom', async () => {
@@ -163,10 +163,10 @@ contract('Voom', ([owner]) => {
         const accounts = await web3.eth.getAccounts()
         await voom.withdraw({ from: accounts[31] })
         const User_31 = await voom.vooms.call(accounts[31])
-        assert(User_31.withdraw.toString() == '2')
+        assert(User_31.withdraw.toString() == '0')
         assert(User_31.status == false)
     })    
-
+    
     it('Deposit tokensX account 32 voom', async () => {
         const voom = await Voom.deployed()
         const accounts = await web3.eth.getAccounts()
@@ -305,5 +305,5 @@ contract('Voom', ([owner]) => {
         const owner_new = await voom.owner()
         assert(owner_last != owner_new)
     })
-    
+
 })

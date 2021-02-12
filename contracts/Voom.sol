@@ -38,6 +38,7 @@ contract Voom is Members  {
         uint256 dateWithdraw;
         uint256 withdraw;
         uint256 amountWithdraw;
+        uint256 global_earnings;
         bool status;
     }
     mapping(address => VoomStruct) public vooms;
@@ -117,6 +118,31 @@ contract Voom is Members  {
         vooms[_user].dateWithdraw = _value;
     }
 
+    function finishVoom(address _user) onlyOwner external {
+        _finishVoom(_user);
+    }
+
+    function _finishVoom(address _user) internal {
+        if(TVL >= vooms[_user].amountDeposited){
+            TVL = TVL.sub(vooms[_user].amountDeposited);
+        } else {
+            TVL = TVL.sub(TVL);
+        }
+        vooms[_user].status = false;
+        vooms[_user].amountUser = 0;
+        vooms[_user].amountGain = 0;
+        vooms[_user].amountGainNetwork = 0;
+        vooms[_user].amountBonus = 0;
+        vooms[_user].amountDeposited = 0;
+        vooms[_user].withdraw = 0;
+        vooms[_user].amountWithdraw = 0;
+        vooms[_user].dateWithdraw = 0;
+    }
+
+    function _add_global_earnings(address _user, uint256 _value) internal {
+        vooms[_user].global_earnings = vooms[_user].global_earnings.add(_value);
+    }
+
     function deposit(uint256 _amount, address _ref) external {
         registerUser(_ref);
         require(paused == false, "!paused");
@@ -138,12 +164,13 @@ contract Voom is Members  {
                     emit eventBonus(refTree[0], msg.sender, _amountValue, now);
                     usdt.safeTransfer(address(refTree[0]), _amountValue);
                     vooms[refTree[0]].amountBonus = vooms[refTree[0]].amountBonus.add(_amountValue);
+                    _add_global_earnings(refTree[0], _amountValue);
                     _amountCheckSponsor = vooms[refTree[0]].amountGain.add(vooms[refTree[0]].amountGainNetwork).add(vooms[refTree[0]].amountBonus);
                     if(_amountCheckSponsor >= _promise){
-                        vooms[refTree[0]].status = false;
+                        _finishVoom(refTree[0]);
                     }
                 } else {
-                    vooms[refTree[0]].status = false;
+                    _finishVoom(refTree[0]);
                 }
             }
         }
@@ -177,6 +204,7 @@ contract Voom is Members  {
             amountDeposited: _amountDeposited,
             amountGain: 0,
             amountGainNetwork: 0,
+            global_earnings: 0,
             amountBonus: 0,
             lastTime: now,
             dateWithdraw: 0,
@@ -214,7 +242,7 @@ contract Voom is Members  {
             usdt.safeTransfer(chef, _amountValue);
             emit eventDeposit(msg.sender, _amountValue, now);
         } else {
-            vooms[msg.sender].status = false;
+            _finishVoom(msg.sender);
         }
     }
 
@@ -235,14 +263,10 @@ contract Voom is Members  {
             emit eventGain(msg.sender, _amountValue, now);
             usdt.safeTransfer(msg.sender, _amountValue);
             vooms[msg.sender].amountGain = vooms[msg.sender].amountGain.add(_amountValue);
+            _add_global_earnings(msg.sender, _amountValue);
             _amountCheck = vooms[msg.sender].amountGain.add(vooms[msg.sender].amountGainNetwork).add(vooms[msg.sender].amountBonus);
             if(_amountCheck >= _promise){
-                vooms[msg.sender].status = false;
-                if(TVL >= vooms[msg.sender].amountDeposited){
-                    TVL = TVL.sub(vooms[msg.sender].amountDeposited);
-                } else {
-                    TVL = TVL.sub(TVL);
-                }
+                _finishVoom(msg.sender);
             }
             vooms[msg.sender].lastTime = now;
             uint256 _pendingNetwork = _amountValue.mul(network_percentage).div(100);
@@ -265,18 +289,14 @@ contract Voom is Members  {
                                 amountGainNetworkGlobal = amountGainNetworkGlobal.add(_amountValueSponsor);
                                 usdt.safeTransfer(_ref, _amountValueSponsor);
                                 vooms[_ref].amountGainNetwork = vooms[_ref].amountGainNetwork.add(_amountValueSponsor);
+                                _add_global_earnings(_ref, _amountValueSponsor);
                                 _amountCheckSponsor = vooms[_ref].amountGain.add(vooms[_ref].amountGainNetwork).add(vooms[_ref].amountBonus);
                                 if(_amountCheckSponsor >= _promise){
-                                    vooms[_ref].status = false;
-                                    if(TVL >= vooms[_ref].amountDeposited){
-                                        TVL = TVL.sub(vooms[_ref].amountDeposited);
-                                    } else {
-                                        TVL = TVL.sub(TVL);
-                                    }
+                                    _finishVoom(_ref);
                                 }
                             }
                         } else {
-                            vooms[_ref].status = false;
+                            _finishVoom(_ref);
                         }
                     }
                 } else {
@@ -288,7 +308,7 @@ contract Voom is Members  {
                 usdt.safeTransfer(commissions_2, _pendingCommisions.div(2));
             }
         } else {
-            vooms[msg.sender].status = false;
+            _finishVoom(msg.sender);
         }
     }
 
@@ -317,11 +337,7 @@ contract Voom is Members  {
                     vooms[msg.sender].amountBonus = 0;
                     withdrawGlobal = withdrawGlobal.sub(vooms[msg.sender].amountWithdraw);
                     amountWithdrawGlobal = amountWithdrawGlobal.add(vooms[msg.sender].amountWithdraw);
-                    if(TVL >= vooms[msg.sender].amountWithdraw){
-                        TVL = TVL.sub(vooms[msg.sender].amountWithdraw);
-                    } else {
-                        TVL = TVL.sub(TVL);
-                    }
+                    _finishVoom(msg.sender);
                 } else {
                     revert("!withdrawBalanceFinish");
                 }
